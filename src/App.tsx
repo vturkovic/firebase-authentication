@@ -1,24 +1,57 @@
-import React from 'react';
-import logo from './logo.svg';
+import { useState, useEffect } from 'react';
 import './App.css';
+import LoginForm from './components/LoginFormComponent';
+import authService from './services/authService';
 
-function App() {
+
+const App = () => {
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  // Check if user is logged in on mount
+  useEffect(() => {
+    const isLoggedIn = authService.isLoggedIn();
+    setLoggedIn(isLoggedIn);
+  }, []);
+
+  // Log out the user if the token has expired
+  useEffect(() => {
+    const interval = setInterval(() => {
+      authService.checkTokenExpiration();
+      const isLoggedIn = authService.isLoggedIn();
+      setLoggedIn(isLoggedIn);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      await authService.login(email, password);
+      setLoggedIn(true);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      setLoggedIn(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {loggedIn ? (
+        <div>
+          <h1>Welcome!</h1>
+          <button onClick={handleLogout}>Log Out</button>
+        </div>
+      ) : (
+        <LoginForm onLogin={handleLogin} />
+      )}
     </div>
   );
 }

@@ -4,6 +4,8 @@ import LoginForm from './components/LoginFormComponent';
 import authService from './services/authService';
 
 
+// Dummy user email: abc@gmail.com, password: asdfgh
+
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
 

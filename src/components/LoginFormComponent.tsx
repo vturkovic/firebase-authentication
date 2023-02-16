@@ -4,7 +4,7 @@ interface Props {
   onLogin: (email: string, password: string) => Promise<void>;
 }
 
-function LoginForm({ onLogin }: Props) {
+const LoginForm = ({ onLogin }: Props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 

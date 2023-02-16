@@ -2,7 +2,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { JwtPayload } from 'jsonwebtoken';
 import { FirebaseError } from 'firebase/app';
-import jwt_decode from 'jwt-decode'
+import jwt_decode from 'jwt-decode';
 import { firebaseConfig } from './firebaseConfig';
 
 // Initialize Firebase
@@ -13,7 +13,9 @@ const authService = {
     try {
       const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
       const token = await userCredential.user?.getIdToken();
+      const expirationTime = Date.now() + 1200000; // 20 mins from now
       localStorage.setItem('firebase_token', token || '');
+      localStorage.setItem('firebase_token_expiration', expirationTime.toString());
       return token;
     } catch (error: unknown) {
       if (error instanceof FirebaseError) {
@@ -27,6 +29,7 @@ const authService = {
     try {
       await firebase.auth().signOut();
       localStorage.removeItem('firebase_token');
+      localStorage.removeItem('firebase_token_expiration');
     } catch (error: unknown) {
       if (error instanceof FirebaseError) {
         throw new Error(error.message);
@@ -38,9 +41,10 @@ const authService = {
 
   isLoggedIn() {
     const token = localStorage.getItem('firebase_token');
-    if (token) {
+    const expirationTime = localStorage.getItem('firebase_token_expiration');
+    if (token && expirationTime) {
       const decodedToken = jwt_decode(token) as JwtPayload;
-      if (decodedToken && decodedToken.exp && Date.now() < decodedToken.exp * 1000) {
+      if (decodedToken && decodedToken.exp && Date.now() < parseInt(expirationTime)) {
         return true;
       }
     }
@@ -49,9 +53,11 @@ const authService = {
 
   checkTokenExpiration() {
     const token = localStorage.getItem('firebase_token');
-    if (token) {
+    const expirationTime = localStorage.getItem('firebase_token_expiration');
+    
+    if (token && expirationTime) {
       const decodedToken = jwt_decode(token) as JwtPayload;
-      if (decodedToken && decodedToken.exp && Date.now() > decodedToken.exp * 1000) {
+      if (decodedToken && decodedToken.exp && Date.now() > parseInt(expirationTime)) {
         this.logout();
       }
     }

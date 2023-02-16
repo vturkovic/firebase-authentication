@@ -17,14 +17,17 @@ const App = () => {
 
   // Log out the user if the token has expired
   useEffect(() => {
-    const interval = setInterval(() => {
-      authService.checkTokenExpiration();
-      const isLoggedIn = authService.isLoggedIn();
-      setLoggedIn(isLoggedIn);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
+    if (loggedIn) {
+      const interval = setInterval(() => {
+        authService.checkTokenExpiration();
+        const isLoggedIn = authService.isLoggedIn();
+        setLoggedIn(isLoggedIn);
+      }, 300000); // Check every 5 mins
+  
+      return () => clearInterval(interval);
+    }
+  }, [loggedIn]);
+  
 
   const handleLogin = async (email: string, password: string) => {
     try {

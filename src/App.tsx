@@ -3,31 +3,8 @@ import './App.css';
 import LoginForm from './components/LoginFormComponent';
 import authService from './services/authService';
 
-
-// Dummy user email: abc@gmail.com, password: asdfgh
-
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
-
-  // Check if user is logged in on mount
-  useEffect(() => {
-    const isLoggedIn = authService.isLoggedIn();
-    setLoggedIn(isLoggedIn);
-  }, []);
-
-  // Log out the user if the token has expired
-  useEffect(() => {
-    if (loggedIn) {
-      const interval = setInterval(() => {
-        authService.checkTokenExpiration();
-        const isLoggedIn = authService.isLoggedIn();
-        setLoggedIn(isLoggedIn);
-      }, 300000); // Check every 5 mins
-  
-      return () => clearInterval(interval);
-    }
-  }, [loggedIn]);
-  
 
   const handleLogin = async (email: string, password: string) => {
     try {
@@ -47,6 +24,21 @@ const App = () => {
     }
   };
 
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+
+    // If the user is logged in, set a timeout to log them out after 20 minutes.
+    if (loggedIn) {
+      timeout = setTimeout(() => {
+        handleLogout();
+      }, 20 * 60 * 1000);
+    }
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [loggedIn]);
+
   return (
     <div className="App">
       {loggedIn ? (
@@ -59,6 +51,6 @@ const App = () => {
       )}
     </div>
   );
-}
+};
 
 export default App;

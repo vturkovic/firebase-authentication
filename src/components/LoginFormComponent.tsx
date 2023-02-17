@@ -1,25 +1,34 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { LoginFormType } from '../interfaces';
 
-interface Props {
-  onLogin: (email: string, password: string) => Promise<void>;
-}
-
-const LoginForm = ({ onLogin }: Props) => {
+const LoginComponent = ({ onLogin, loginError }: LoginFormType) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    await onLogin(email, password);
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    onLogin(email, password);
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="email" value={email} onChange={e => setEmail(e.target.value)} />
-      <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
-      <button type="submit">Log In</button>
-    </form>
-  );
-}
+    <div>
+      <h2>Login</h2>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="email">Email</label>
+        <input type="email" id="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+        <br />
+        <label htmlFor="password">Password</label>
+        <input type="password" id="password" value={password} onChange={(event) => setPassword(event.target.value)} />
 
-export default LoginForm;
+        <button type="submit">Login</button>
+      </form>
+      {loginError && (
+        <div style={{ color: 'red' }}>
+          {typeof loginError === 'string' ? loginError : loginError.message}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default LoginComponent;
